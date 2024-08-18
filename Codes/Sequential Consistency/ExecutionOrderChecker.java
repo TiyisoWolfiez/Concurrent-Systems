@@ -8,6 +8,7 @@ public class ExecutionOrderChecker {
         permute(operations, 0, result);
         return result;
     }
+    
     private static void permute(List<MethodCall> operations, int start, List<List<MethodCall>> result) {
         if (start == operations.size()) {
             if (isSequentiallyConsistent(operations)) {
@@ -29,8 +30,7 @@ public class ExecutionOrderChecker {
     
     private static boolean isValidPrefix(List<MethodCall> operations, int length) {
         Map<String, Integer> lastOrderInThread = new HashMap<>();
-        Queue<String> enqueuedElements = new LinkedList<>();
-        Map<String, Integer> queueMap = new HashMap<>();
+        Queue<String> globalQueue = new LinkedList<>();
     
         for (int i = 0; i < length; i++) {
             MethodCall operation = operations.get(i);
@@ -41,17 +41,11 @@ public class ExecutionOrderChecker {
             lastOrderInThread.put(operation.threadId, operation.orderInThread);
     
             if (operation.action.startsWith("enq")) {
-                String element = operation.action.substring(3, 4);
-                enqueuedElements.add(element);
-                queueMap.put(element, queueMap.getOrDefault(element, 0) + 1);
+                String element = operation.action.substring(4, 5);
+                globalQueue.add(element);
             } else if (operation.action.startsWith("deq")) {
-                String element = operation.action.substring(3, 4);
-                if (!queueMap.containsKey(element) || queueMap.get(element) == 0) {
-                    return false;
-                }
-                queueMap.put(element, queueMap.get(element) - 1);
-                String expectedEnqueue = enqueuedElements.poll();
-                if (!element.equals(expectedEnqueue)) {
+                String element = operation.action.substring(4, 5);
+                if (globalQueue.isEmpty() || !globalQueue.poll().equals(element)) {
                     return false;
                 }
             }
@@ -61,8 +55,7 @@ public class ExecutionOrderChecker {
     
     private static boolean isSequentiallyConsistent(List<MethodCall> operations) {
         Map<String, Integer> lastOrderInThread = new HashMap<>();
-        Queue<String> enqueuedElements = new LinkedList<>();
-        Map<String, Integer> queueMap = new HashMap<>();
+        Queue<String> globalQueue = new LinkedList<>();
     
         for (MethodCall operation : operations) {
             int lastOrder = lastOrderInThread.getOrDefault(operation.threadId, 0);
@@ -71,19 +64,12 @@ public class ExecutionOrderChecker {
             }
             lastOrderInThread.put(operation.threadId, operation.orderInThread);
     
-            // Check FIFO queue constraint
             if (operation.action.startsWith("enq")) {
-                String element = operation.action.substring(3, 4);
-                enqueuedElements.add(element);
-                queueMap.put(element, queueMap.getOrDefault(element, 0) + 1);
+                String element = operation.action.substring(4, 5);
+                globalQueue.add(element);
             } else if (operation.action.startsWith("deq")) {
-                String element = operation.action.substring(3, 4);
-                if (!queueMap.containsKey(element) || queueMap.get(element) == 0) {
-                    return false;
-                }
-                queueMap.put(element, queueMap.get(element) - 1);
-                String expectedEnqueue = enqueuedElements.poll();
-                if (!element.equals(expectedEnqueue)) {
+                String element = operation.action.substring(4, 5);
+                if (globalQueue.isEmpty() || !globalQueue.poll().equals(element)) {
                     return false;
                 }
             }
