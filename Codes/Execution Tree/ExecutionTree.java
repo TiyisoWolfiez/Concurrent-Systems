@@ -32,10 +32,52 @@ class Node {
     }
 
     // Maybe adding a method here would wake it easier ¯\_(ツ)_/¯
-    // ------------------------------------------------ My Method------------------------------------
     
+    // ----------------------------My METHOODS-----------------------------------------------------
 
-    // ----------------------------------------------------------------------------------------------
+    public boolean isLeaf() {
+        return children.isEmpty();
+    }
+
+    public boolean isUnivalent() {
+        if (isLeaf()) {
+            return true;
+        }
+        HashSet<Integer> values = new HashSet<>();
+        for (Node child : children) {
+            if (child.value != null) {
+                values.add(child.value);
+            }
+        }
+        return values.size() <= 1;
+    }
+
+    public boolean isBivalent() {
+        if (isLeaf()) {
+            return false;
+        }
+        HashSet<Integer> values = new HashSet<>();
+        for (Node child : children) {
+            if (child.value != null) {
+                values.add(child.value);
+            }
+        }
+        return values.size() > 1;
+    }
+
+    public boolean isCritical() {
+        if (isLeaf()) {
+            return false;
+        }
+        for (Node child : children) {
+            if (!child.isUnivalent()) {
+                return false;
+            }
+        }
+        return isBivalent();
+    }
+
+    //  -------------------------------- END ----------------------------------------------
 
     public void printTree(String prefix, boolean isTail) {
 
@@ -57,13 +99,7 @@ public class ExecutionTree {
 
     public void assignLabels() {
         // Step 1: Label FINAL nodes
-        labelFinalNodes(root);
-
-        // Step 2: Determine UNIVALENT and BIVALENT nodes
-        determineUnivalentBivalent(root);
-
-        // Step 3: Determine CRITICAL nodes
-        determineCriticalNodes(root);
+        assignLabels(root);
     }
 
     // I wouldn't change this if I were you
@@ -107,54 +143,25 @@ public class ExecutionTree {
         return node;
     }
 
-    private void labelFinalNodes(Node node) {
-        if (node.children.isEmpty()) {
+    // --------------------------------My METHOD ------------------------------------
+
+    private void assignLabels(Node node) {
+        if (node.isLeaf()) {
             node.addLabel(Label.FINAL);
-        } else {
-            for (Node child : node.children) {
-                labelFinalNodes(child);
-            }
-        }
-    }
-
-    private void determineUnivalentBivalent(Node node) {
-        if (node.children.isEmpty()) {
-            return;
-        }
-
-        Set<Integer> values = new HashSet<>();
-        for (Node child : node.children) {
-            determineUnivalentBivalent(child);
-            values.add(child.value);
-        }
-
-        if (values.size() == 1) {
+        } else if (node.isUnivalent()) {
             node.addLabel(Label.UNIVALENT);
-        } else {
+        } else if (node.isBivalent()) {
             node.addLabel(Label.BIVALENT);
-        }
-    }
-
-    private void determineCriticalNodes(Node node) {
-        if (node.children.isEmpty()) {
-            return;
-        }
-
-        boolean isCritical = true;
-        for (Node child : node.children) {
-            if (!child.labels.contains(Label.UNIVALENT)) {
-                isCritical = false;
-                break;
+            if (node.isCritical()) {
+                node.addLabel(Label.CRITICAL);
             }
         }
-
-        if (isCritical) {
-            node.addLabel(Label.CRITICAL);
-        }
-
         for (Node child : node.children) {
-            determineCriticalNodes(child);
+            assignLabels(child);
         }
     }
 
 }
+
+
+// 28/62
