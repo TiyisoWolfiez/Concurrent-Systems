@@ -14,7 +14,7 @@ public class PerformanceComparison {
 
             // Concurrent execution
             long concurrentStart = System.nanoTime();
-            TestRunner runner = new TestRunner(4);
+            TestRunner runner = new TestRunner(3);
             runner.runTests(testClass);
             long concurrentEnd = System.nanoTime();
             long concurrentTime = concurrentEnd - concurrentStart;
