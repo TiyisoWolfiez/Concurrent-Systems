@@ -1,4 +1,3 @@
-
 class Counter implements Runnable 
 {
 	private int value;
